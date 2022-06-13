@@ -1,0 +1,216 @@
+package edu.gues.demo.controller;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping
+public class ShopListController {
+
+    @GetMapping
+    public String index() {
+        return "[\n" +
+                "{\n" +
+                "\"id\":1,\n" +
+                "\"shopName\":\"蛋糕房\",\n" +
+                "\"saleNum\":996,\n" +
+                "\"offerPrice\":100,\n" +
+                "\"distributionCost\":5,\n" +
+                "\"welfare\":\"进店可获得一个香草冰淇淋\",\n" +
+                "\"time\":\"配送约2-5小时\",\n" +
+                "\"shopPic\":\"http://120.79.233.52:9050/static/img/shop/shop1.png\",\n" +
+                "\"shopNotice\":\"公告：下单后2-5小时送达！请耐心等候\",\n" +
+                "\"foodList\":[\n" +
+                "\t{ \n" +
+                "\t\"foodId\":\"1\",\n" +
+                "\t\"foodName\":\"招牌丰收硕果12寸\",\n" +
+                "\t\"taste\":\"水果、奶油、面包、鸡蛋\",\n" +
+                "\t\"saleNum\":\"50\",\n" +
+                "\t\"price\":198,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food1.png\"\n" +
+                "\t},\n" +
+                "\t{\n" +
+                "\t\"foodId\":\"2\",\n" +
+                "\t\"foodName\":\"玫瑰花创意蛋糕\",\n" +
+                "\t\"taste\":\"玫瑰花、奶油、鸡蛋\",\n" +
+                "\t\"saleNum\":\"100\",\n" +
+                "\t\"price\":148,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food2.png\"\n" +
+                "\t},\n" +
+                "\t{\n" +
+                "\t\"foodId\":\"3\",\n" +
+                "\t\"foodName\":\"布朗熊与可妮\",\n" +
+                "\t\"taste\":\"奶油、巧克力、果粒夹层\",\n" +
+                "\t\"saleNum\":\"80\",\n" +
+                "\t\"price\":90,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food3.png\"\n" +
+                "\t}\n" +
+                "\t]\n" +
+                "},\n" +
+                "{\n" +
+                "\"id\":2,\n" +
+                "\"shopName\":\"爪哇咖啡.西餐.酒吧\",\n" +
+                "\"saleNum\":11,\n" +
+                "\"offerPrice\":20,\n" +
+                "\"distributionCost\":7,\n" +
+                "\"welfare\":\"进店即可送一杯拿铁咖啡\",\n" +
+                "\"time\":\"配送约40分钟\",\n" +
+                "\"shopPic\":\"http://120.79.233.52:9050/static/img/shop/shop2.png\",\n" +
+                "\"shopNotice\":\"公告：本店周一到周五所有套餐打八折，送咖啡。\",\n" +
+                "\"foodList\":[\n" +
+                "\t{ \n" +
+                "\t\"foodId\":\"1\",\n" +
+                "\t\"foodName\":\"双人牛排套餐\",\n" +
+                "\t\"taste\":\"招牌牛仔骨配煎蛋及意大利面\",\n" +
+                "\t\"saleNum\":\"50\",\n" +
+                "\t\"price\":575,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food21.png\"\n" +
+                "\t},\n" +
+                "\t{\n" +
+                "\t\"foodId\":\"2\",\n" +
+                "\t\"foodName\":\"单人饮品套餐\",\n" +
+                "\t\"taste\":\"摩卡、提拉米苏蛋糕\",\n" +
+                "\t\"saleNum\":\"79\",\n" +
+                "\t\"price\":49,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food22.png\"\n" +
+                "\t},\n" +
+                "\t{\n" +
+                "\t\"foodId\":\"3\",\n" +
+                "\t\"foodName\":\"浪漫情侣套餐\",\n" +
+                "\t\"taste\":\"铁板牛仔骨牛排、铁板菲力牛排、烟熏三文鱼佐土豆泥\",\n" +
+                "\t\"saleNum\":\"47\",\n" +
+                "\t\"price\":368,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food23.png\"\n" +
+                "\t}\n" +
+                "\t]\n" +
+                "},\n" +
+                "{\n" +
+                "\"id\":3,\n" +
+                "\"shopName\":\"必胜客\",\n" +
+                "\"saleNum\":10,\n" +
+                "\"offerPrice\":15,\n" +
+                "\"distributionCost\":5,\n" +
+                "\"welfare\":\"下单即可获得一个￥5优惠券\",\n" +
+                "\"time\":\"配送约20分钟\",\n" +
+                "\"shopPic\":\"http://120.79.233.52:9050/static/img/shop/shop3.png\",\n" +
+                "\"shopNotice\":\"公告：狂欢尽兴 必胜有礼 5折开抢。\",\n" +
+                "\"foodList\":[\n" +
+                "\t{ \n" +
+                "\t\"foodId\":\"1\",\n" +
+                "\t\"foodName\":\"3份单人工作日特惠餐\",\n" +
+                "\t\"taste\":\"披萨、沙拉、柠檬红茶\",\n" +
+                "\t\"saleNum\":\"50\",\n" +
+                "\t\"price\":99,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food31.png\"\n" +
+                "\t},\n" +
+                "\t{\n" +
+                "\t\"foodId\":\"2\",\n" +
+                "\t\"foodName\":\"拼盘+嗨杯鲜果茶\",\n" +
+                "\t\"taste\":\"薯条、鸡翅、鸡米花\",\n" +
+                "\t\"saleNum\":\"140\",\n" +
+                "\t\"price\":49,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food32.png\"\n" +
+                "\t},\n" +
+                "\t{\n" +
+                "\t\"foodId\":\"3\",\n" +
+                "\t\"foodName\":\"德克萨斯牛排2份\",\n" +
+                "\t\"taste\":\"牛肉、柠檬茶\",\n" +
+                "\t\"saleNum\":\"141\",\n" +
+                "\t\"price\":57,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food33.png\"\n" +
+                "\t}\n" +
+                "\t]\n" +
+                "},\n" +
+                "{\n" +
+                "\"id\":4,\n" +
+                "\"shopName\":\"艾尚夜宵\",\n" +
+                "\"saleNum\":496,\n" +
+                "\"offerPrice\":20,\n" +
+                "\"distributionCost\":13,\n" +
+                "\"welfare\":\"下单即可获得一个￥15优惠券\",\n" +
+                "\"time\":\"配送约42分钟\",\n" +
+                "\"shopPic\":\"http://120.79.233.52:9050/static/img/shop/shop4.png\",\n" +
+                "\"shopNotice\":\"公告：本店赠送爱心早餐。\",\n" +
+                "\"foodList\":[\n" +
+                "\t{ \n" +
+                "\t\"foodId\":\"1\",\n" +
+                "\t\"foodName\":\"烤牛肉炒饭\",\n" +
+                "\t\"taste\":\"原味、牛肉、玉米、豌豆、胡萝卜\",\n" +
+                "\t\"saleNum\":\"102\",\n" +
+                "\t\"price\":18.8,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food41.png\"\n" +
+                "\t},\n" +
+                "\t{\n" +
+                "\t\"foodId\":\"2\",\n" +
+                "\t\"foodName\":\"嫩豆腐汤+米饭\",\n" +
+                "\t\"taste\":\"香辣、豆腐花、鸡蛋\",\n" +
+                "\t\"saleNum\":\"66\",\n" +
+                "\t\"price\":14.5,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food42.png\"\n" +
+                "\t},\n" +
+                "\t{\n" +
+                "\t\"foodId\":\"3\",\n" +
+                "\t\"foodName\":\"超辣-酸辣土豆丝\",\n" +
+                "\t\"taste\":\"酸辣、土豆、青尖椒\",\n" +
+                "\t\"saleNum\":\"59\",\n" +
+                "\t\"price\":14,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food43.png\"\n" +
+                "\t}\n" +
+                "\t]\n" +
+                "},\n" +
+                "{\n" +
+                "\"id\":5,\n" +
+                "\"shopName\":\"上岛咖啡\",\n" +
+                "\"saleNum\":300,\n" +
+                "\"offerPrice\":30,\n" +
+                "\"distributionCost\":10,\n" +
+                "\"welfare\":\"下单即可获得一个￥30优惠券\",\n" +
+                "\"time\":\"配送约30分钟\",\n" +
+                "\"shopPic\":\"http://120.79.233.52:9050/static/img/shop/shop5.png\",\n" +
+                "\"shopNotice\":\"公告：本店牛排买一送一。\",\n" +
+                "\"foodList\":[\n" +
+                "\t{ \n" +
+                "\t\"foodId\":\"1\",\n" +
+                "\t\"foodName\":\"特惠双人餐\",\n" +
+                "\t\"taste\":\"牛排、沙拉、浓汤\",\n" +
+                "\t\"saleNum\":\"102\",\n" +
+                "\t\"price\":109,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food51.png\"\n" +
+                "\t},\n" +
+                "\t{\n" +
+                "\t\"foodId\":\"2\",\n" +
+                "\t\"foodName\":\"超值双人餐\",\n" +
+                "\t\"taste\":\"牛排、法包、蔬菜沙拉\",\n" +
+                "\t\"saleNum\":\"100\",\n" +
+                "\t\"price\":139,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food52.png\"\n" +
+                "\t},\n" +
+                "\t{\n" +
+                "\t\"foodId\":\"3\",\n" +
+                "\t\"foodName\":\"双人饮品\",\n" +
+                "\t\"taste\":\"茉莉白龙王、卡布奇诺\",\n" +
+                "\t\"saleNum\":\"70\",\n" +
+                "\t\"price\":69,\n" +
+                "\t\"count\":0,\n" +
+                "\t\"foodPic\":\"http://120.79.233.52:9050/static/img/food/food53.png\"\n" +
+                "\t}\n" +
+                "\t]\n" +
+                "}\n" +
+                "]\n";
+    }
+}
