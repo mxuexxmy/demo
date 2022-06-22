@@ -612,13 +612,41 @@ class DemoApplicationTests {
 
     @Test
     public void test39() {
-        List<String> test = new ArrayList<>();
-        if (CollectionUtil.isNotEmpty(test)) {
-            System.out.println("集合不为空");
-        } else {
-            System.out.println("空集合");
-        }
+        LocalDate currentDate = LocalDate.now();
+        System.out.println(currentDate.atStartOfDay());
     }
+
+    @Test
+    public void test50() {
+        List<String> tests = new ArrayList<>();
+        tests.add("98");
+        tests.add("99");
+        tests.add(null);
+        tests.add(null);
+        tests.add("97");
+        OptionalDouble average = tests.stream().mapToDouble(entity -> Objects.isNull(entity) ? 0 : Double.parseDouble(entity)).average();
+        if (average.isPresent()) {
+            System.out.println(average.getAsDouble());
+        }
+
+    }
+
+    @Test
+    public void test51() {
+        List<String> tests = new ArrayList<>();
+        tests.add("98");
+        tests.add("99");
+        tests.add(null);
+        tests.add(null);
+        tests.add("97");
+        OptionalDouble average = tests.stream().filter(Objects::nonNull).mapToDouble(Double::parseDouble).average();
+        if (average.isPresent()) {
+            System.out.println(average.getAsDouble());
+        }
+
+    }
+
+
 
 
 //    /**
