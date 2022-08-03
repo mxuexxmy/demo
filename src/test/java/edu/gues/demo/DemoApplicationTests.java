@@ -32,6 +32,8 @@ import org.springframework.scheduling.annotation.Async;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -644,6 +646,37 @@ class DemoApplicationTests {
             System.out.println(average.getAsDouble());
         }
 
+    }
+
+
+    @Test
+    public void test52() {
+        List<String> tests = new ArrayList<>();
+        tests.add(null);
+        tests.add(null);
+        tests.add(null);
+        tests.add("");
+        tests.add(null);
+        long count = tests.stream().filter(Objects::nonNull).count();
+        System.out.println(count);
+    }
+
+    @Test
+    public void test53() {
+        String str = "7.759820950639653E-7";
+        Double result = Double.parseDouble(str);
+        BigDecimal big10 = new BigDecimal(String.valueOf(result));
+
+        System.out.println(big10.setScale(7, RoundingMode.HALF_UP).toPlainString());
+
+    }
+
+    @Test
+    public void test54() {
+       String dateTime = "2022-08-03 22:09:00";
+       LocalDateTime localDateTime = LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+        System.out.println(localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
     }
 
 
