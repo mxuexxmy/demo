@@ -4,6 +4,7 @@ import edu.gues.demo.enums.CarType;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,4 +17,6 @@ public class Test1 {
     private String brand;
     private String isNull;
     private Map<String, Object> demo;
+
+    private List<Integer> num;
 }

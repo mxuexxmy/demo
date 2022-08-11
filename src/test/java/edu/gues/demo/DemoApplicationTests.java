@@ -551,7 +551,7 @@ class DemoApplicationTests {
 
     @Test
     public void test31() {
-         test(2022, 2, 14, 2022, 2, 28, Locale.CHINA);
+        test(2022, 2, 14, 2022, 2, 28, Locale.CHINA);
 //         List<DateRange> dateRanges = weeksCovering(LocalDate.now().plusDays(-4), LocalDate.now(), WeekFields.of(Locale.GERMANY));
 //         dateRanges.forEach(System.out::println);
 //        LocalDate currentDate = LocalDate.now();
@@ -586,7 +586,7 @@ class DemoApplicationTests {
 
     @Test
     public void test36() {
-      //  System.out.println(Math.sqrt(0) / 0 * 100);
+        //  System.out.println(Math.sqrt(0) / 0 * 100);
         double a = 1;
         if (a != 0.0) {
             System.out.println("a不等于0");
@@ -598,7 +598,7 @@ class DemoApplicationTests {
 
     @Test
     public void test37() {
-         String str = "2022-05-09 21:38:10.0";
+        String str = "2022-05-09 21:38:10.0";
         System.out.println(DateUtil.parseDateTime(str));
 
     }
@@ -673,13 +673,27 @@ class DemoApplicationTests {
 
     @Test
     public void test54() {
-       String dateTime = "2022-08-03 22:09:00";
-       LocalDateTime localDateTime = LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String dateTime = "2022-08-03 22:09:00";
+        LocalDateTime localDateTime = LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
         System.out.println(localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
     }
 
-
+    @Test
+    public void test55() {
+        Test1 test1 = new Test1();
+        test1.setIsNull("ss");
+        test1.setPlateNumber("bb");
+        List<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        test1.setNum(list);
+        // forEach not modify java(8) collection
+        // 仓库链接：https://stackoverflow.com/questions/23852286/foreach-not-modify-java8-collection
+        test1.getNum().replaceAll(entity -> entity * 2);
+        System.out.println(test1);
+    }
 
 
 //    /**
