@@ -22,6 +22,7 @@ import edu.gues.demo.testinterface.InterfaceOfOne;
 import edu.gues.demo.testinterface.impl.InterfaceOfOneImpl;
 import edu.gues.demo.util.AsciiUtil;
 import edu.gues.demo.util.DateRange;
+import lombok.SneakyThrows;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,8 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -679,6 +682,47 @@ class DemoApplicationTests {
         System.out.println(localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
     }
 
+    @Test
+    public void test55() {
+        String dateTime = "2022-11-08 14:33:00";
+        String nowTime = "2022-11-08 14:35:59";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime startTime = LocalDateTime.parse(dateTime, formatter);
+        LocalDateTime now = LocalDateTime.parse(nowTime, formatter);
+        Long minutes = startTime.until(now, ChronoUnit.MINUTES);
+        System.out.println(minutes);
+    }
+
+    @Test
+    public void test56() {
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime queryDateTime = currentTime.plusMinutes(-10);
+        System.out.println(queryDateTime);
+    }
+
+    @Test
+    public void test57() {
+        BigDecimal b1 = new BigDecimal("1.38655");
+        BigDecimal b2 = b1.setScale(3, RoundingMode.HALF_EVEN);
+        System.out.println(b2);
+    }
+
+    @Test
+    public void test58() {
+        BigDecimal b1 = new BigDecimal("1.38655");
+        BigDecimal b2 = b1.setScale(3, RoundingMode.HALF_EVEN);
+        System.out.println(b2);
+    }
+
+    @SneakyThrows
+    @Test
+    public void test59() {
+        String checkDateTimeStr = "2022-11-08 12:00:00";
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        // 调整日期
+        Date checkDateTime = dateFormat.parse(checkDateTimeStr);
+        System.out.println(dateFormat.format(checkDateTime));
+    }
 
 
 
