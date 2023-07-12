@@ -1,40 +1,41 @@
 package edu.gues.demo;
 
-import cn.afterturn.easypoi.excel.entity.ExportParams;
-import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.date.LocalDateTimeUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import cn.smallbun.screw.core.Configuration;
+import cn.smallbun.screw.core.engine.EngineConfig;
+import cn.smallbun.screw.core.engine.EngineFileType;
+import cn.smallbun.screw.core.engine.EngineTemplateType;
+import cn.smallbun.screw.core.execute.DocumentationExecute;
+import cn.smallbun.screw.core.process.ProcessConfig;
 import com.google.common.collect.Sets;
-import edu.gues.demo.entity.Car;
-import edu.gues.demo.entity.LoginCaseDto;
-import edu.gues.demo.entity.LoginUrlDto;
-import edu.gues.demo.entity.Test1;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import edu.gues.demo.entity.*;
 import edu.gues.demo.enums.CarType;
 import edu.gues.demo.enums.CutStatusEnum;
 import edu.gues.demo.enums.PhysicalTargetExportEnum;
+import edu.gues.demo.service.TestService;
 import edu.gues.demo.test.TestInterface;
-import edu.gues.demo.testinterface.InterfaceOfOne;
 import edu.gues.demo.testinterface.impl.InterfaceOfOneImpl;
 import edu.gues.demo.util.AsciiUtil;
 import edu.gues.demo.util.DateRange;
-import org.apache.poi.ss.formula.functions.T;
-import org.apache.poi.ss.usermodel.Workbook;
+import edu.gues.demo.util.PhysicalIndexCalculateUtil;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.scheduling.annotation.Async;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Method;
+import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.DayOfWeek;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -46,11 +47,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static cn.hutool.json.XMLTokener.entity;
 import static java.util.stream.Collectors.joining;
 
 @SpringBootTest
@@ -58,6 +61,13 @@ class DemoApplicationTests {
 
     private static List<Object> list;
     private static Function keyExtractors;
+
+    @Autowired
+    private TestService testService;
+
+    static List<String> minusBrandCodeListOf15Minutes = new ArrayList<>(
+            Arrays.asList("1326539", "30649731", "30819339", "32750057")
+    );
 
     @Test
     void contextLoads() {
@@ -551,7 +561,7 @@ class DemoApplicationTests {
 
     @Test
     public void test31() {
-         test(2022, 2, 14, 2022, 2, 28, Locale.CHINA);
+        test(2022, 2, 14, 2022, 2, 28, Locale.CHINA);
 //         List<DateRange> dateRanges = weeksCovering(LocalDate.now().plusDays(-4), LocalDate.now(), WeekFields.of(Locale.GERMANY));
 //         dateRanges.forEach(System.out::println);
 //        LocalDate currentDate = LocalDate.now();
@@ -586,7 +596,7 @@ class DemoApplicationTests {
 
     @Test
     public void test36() {
-      //  System.out.println(Math.sqrt(0) / 0 * 100);
+        //  System.out.println(Math.sqrt(0) / 0 * 100);
         double a = 1;
         if (a != 0.0) {
             System.out.println("a不等于0");
@@ -598,7 +608,7 @@ class DemoApplicationTests {
 
     @Test
     public void test37() {
-         String str = "2022-05-09 21:38:10.0";
+        String str = "2022-05-09 21:38:10.0";
         System.out.println(DateUtil.parseDateTime(str));
 
     }
@@ -673,13 +683,586 @@ class DemoApplicationTests {
 
     @Test
     public void test54() {
-       String dateTime = "2022-08-03 22:09:00";
-       LocalDateTime localDateTime = LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String dateTime = "2022-08-03 22:09:00";
+        LocalDateTime localDateTime = LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
         System.out.println(localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
     }
 
+    @Test
+    public void test55() {
+        String dateTime = "2022-11-08 14:33:00";
+        String nowTime = "2022-11-08 14:35:59";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime startTime = LocalDateTime.parse(dateTime, formatter);
+        LocalDateTime now = LocalDateTime.parse(nowTime, formatter);
+        Long minutes = startTime.until(now, ChronoUnit.MINUTES);
+        System.out.println(minutes);
+    }
 
+    @Test
+    public void test56() {
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime queryDateTime = currentTime.plusMinutes(-10);
+        System.out.println(queryDateTime);
+    }
+
+    @Test
+    public void test57() {
+        BigDecimal b1 = new BigDecimal("1.38655");
+        BigDecimal b2 = b1.setScale(3, RoundingMode.HALF_EVEN);
+        System.out.println(b2);
+    }
+
+    @Test
+    public void test58() {
+        BigDecimal b1 = new BigDecimal("0.58855");
+        BigDecimal b2 = b1.scaleByPowerOfTen(3).setScale(0, RoundingMode.HALF_EVEN);
+        System.out.println(b2);
+    }
+
+    @SneakyThrows
+    @Test
+    public void test59() {
+        String checkDateTimeStr = "2022-11-08 12:00:00";
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        // 调整日期
+        Date checkDateTime = dateFormat.parse(checkDateTimeStr);
+        System.out.println(dateFormat.format(checkDateTime));
+    }
+
+    @Test
+    public void test60() {
+        String emCode = "JJ-07";
+
+        if (emCode.contains("JJ")) {
+            System.out.println("JJ");
+        }
+
+
+    }
+
+
+    @Test
+    public void test61() {
+        BigDecimal bigDecimal = new BigDecimal("999");
+
+        System.out.println(bigDecimal.scaleByPowerOfTen(-3));
+
+    }
+
+
+    @Test
+    public void test62() {
+        List<BigDecimal> list = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            list.add(new BigDecimal(RandomUtil.randomInt(10, 100)));
+        }
+        PhysicalIndexCalculateUtil physicalIndexCalculateUtil = new PhysicalIndexCalculateUtil(list, "80", "50", "65", 3);
+        System.out.println("数组：" + list);
+        System.out.println("avg:" + physicalIndexCalculateUtil.avg());
+        System.out.println("min:" + physicalIndexCalculateUtil.min());
+        System.out.println("max:" + physicalIndexCalculateUtil.max());
+        System.out.println("cpk:" + physicalIndexCalculateUtil.cpk());
+        System.out.println("sd:" + physicalIndexCalculateUtil.sd());
+        System.out.println("unqualifiedQuantity:" + physicalIndexCalculateUtil.unqualifiedQuantity());
+        System.out.println("exceededLimit:" + physicalIndexCalculateUtil.exceededLimit());
+        System.out.println("exceededLowerLimit:" + physicalIndexCalculateUtil.exceededLowerLimit());
+        System.out.println("cv:" + physicalIndexCalculateUtil.cv());
+        System.out.println("cp:" + physicalIndexCalculateUtil.cp());
+    }
+
+    @Test
+    public void test63() {
+        List<String> list = new ArrayList<>();
+        list.add("1");
+        list.add("1");
+        list.add("2");
+        list.add("2");
+        list.add("3");
+        list.add("3");
+        list.add("4");
+        Set<String> set = new HashSet<>();
+        list.forEach(entity -> {
+            if (set.contains(entity)) {
+                System.out.println("已经存在：" + entity);
+            } else {
+                System.out.println(entity);
+            }
+            set.add(entity);
+        });
+    }
+
+    @Test
+    public void test64() {
+        System.out.println(new BigDecimal("3440").divide(new BigDecimal("1000")));
+        System.out.println(new BigDecimal("3100").divide(new BigDecimal("1000")));
+        System.out.println(new BigDecimal("2760").divide(new BigDecimal("1000")));
+        System.out.println("--------------------------------");
+        System.out.println(new BigDecimal("3443").setScale(2, RoundingMode.HALF_EVEN));
+    }
+
+
+    @Test
+    public void test65() {
+        List<UserDTO> userDTOS = new ArrayList<UserDTO>();
+        for (int i = 0; i < 10; i++) {
+            UserDTO userDTO = new UserDTO();
+            userDTO.setAge(RandomUtil.randomInt(10, 25));
+            userDTO.setName(RandomUtil.randomString(4));
+            userDTOS.add(userDTO);
+        }
+        userDTOS.sort(Comparator.comparing(UserDTO::getAge, Collections.reverseOrder()));
+        userDTOS.forEach(System.out::println);
+    }
+
+
+    @Test
+    public void test66() {
+        BigDecimal value = new BigDecimal("100.123");
+        int bit = value.scale();
+        System.out.println("小数位数：" + bit);
+    }
+
+    @Test
+    public void test67() {
+        String str = "     ";
+
+        if (StrUtil.isNotBlank(str)) {
+            System.out.println(str.trim());
+        } else {
+            System.out.println("111");
+        }
+
+    }
+
+    @Test
+    public void test68() {
+        List<String> dateTimeStr = new ArrayList<String>();
+        dateTimeStr.add("2023-02-21 15:51:00");
+        dateTimeStr.add("2023-02-01 15:51:00");
+        dateTimeStr.add("2023-02-15 15:51:00");
+        dateTimeStr.add("2023-02-22 15:51:00");
+        dateTimeStr.add("2023-02-23 15:51:00");
+        dateTimeStr.add("2023-05-26 15:51:00");
+
+        List<LocalDateTime> dateTimes = new ArrayList<>();
+
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        dateTimeStr.forEach(entity -> {
+            dateTimes.add(LocalDateTime.parse(entity, dateTimeFormatter));
+        });
+
+        dateTimes.sort(Comparator.comparing(LocalDateTime::toString, Collections.reverseOrder()));
+
+        dateTimes.forEach(System.out::println);
+
+
+    }
+
+    @Test
+    public void test69() {
+        List<String> dateTimeStr = new ArrayList<String>();
+        dateTimeStr.add("2023-02-21 15:51:00");
+        dateTimeStr.add("2023-02-01 15:51:00");
+        dateTimeStr.add("2023-02-15 15:51:00");
+        dateTimeStr.add("2023-02-22 15:51:00");
+        dateTimeStr.add("2023-02-23 15:51:00");
+        dateTimeStr.add("2023-05-26 15:51:00");
+
+        List<CarDTO> dateTimes = new ArrayList<>();
+
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        dateTimeStr.forEach(entity -> {
+            CarDTO carDTO = new CarDTO();
+            carDTO.setType(NumberUtil.roundStr(3, 1));
+            carDTO.setLocalDateTime(LocalDateTime.parse(entity, dateTimeFormatter));
+            dateTimes.add(carDTO);
+        });
+
+        dateTimes.sort(Comparator.comparing(CarDTO::getLocalDateTime, Collections.reverseOrder()));
+
+        dateTimes.forEach(System.out::println);
+        System.out.println("-------------");
+        LocalDateTime currentDateTime = LocalDateTime.now();
+
+        if (currentDateTime.isBefore(dateTimes.get(0).getLocalDateTime())) {
+            System.out.println("存在 " + dayCount(dateTimes, 5) + " 次！");
+        }
+
+    }
+
+
+    public int dayCount(List<CarDTO> dateTimes, int day) {
+        AtomicInteger count = new AtomicInteger();
+        LocalDateTime startDateTime = LocalDateTime.now().plusDays(-day);
+
+        dateTimes.forEach(entity -> {
+            if (!entity.getLocalDateTime().isBefore(startDateTime)) {
+                count.getAndIncrement();
+            }
+        });
+        return count.get();
+    }
+
+
+    @Test
+    public void test70() {
+
+        String upLimit = "3110";
+        upLimit = new BigDecimal(upLimit).scaleByPowerOfTen(-3).toPlainString();
+
+        String temp = "3110";
+        temp = new BigDecimal(temp).divide(new BigDecimal("1000")).toPlainString();
+
+        System.out.println(upLimit);
+        System.out.println(temp);
+        String setValue = "3000";
+
+        String lowLimit = "2850";
+
+        List<BigDecimal> dataList = new ArrayList<>();
+        dataList.add(new BigDecimal("2.76"));
+        dataList.add(new BigDecimal("2.76"));
+        dataList.add(new BigDecimal("2.76"));
+        dataList.add(new BigDecimal("2.85"));
+        dataList.add(new BigDecimal("2.76"));
+        dataList.add(new BigDecimal("2.76"));
+        dataList.add(new BigDecimal("2.76"));
+        dataList.add(new BigDecimal("2.76"));
+        dataList.add(new BigDecimal("2.76"));
+        dataList.add(new BigDecimal("2.76"));
+        dataList.add(new BigDecimal("2.76"));
+        dataList.add(new BigDecimal("2.76"));
+        dataList.add(new BigDecimal("2.76"));
+        dataList.add(new BigDecimal("3.1106"));
+
+        PhysicalIndexCalculateUtil physicalIndexCalculateUtil = new PhysicalIndexCalculateUtil(dataList, upLimit, setValue, lowLimit, 3);
+
+        System.out.println(physicalIndexCalculateUtil.max());
+        System.out.println(physicalIndexCalculateUtil.exceededLimit());
+
+    }
+
+    @Test
+    public void test71() {
+        String dateTime = "2023-03-08 17:15:59";
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime currentDateTime = LocalDateTime.parse(dateTime, dateTimeFormatter);
+        int minute = currentDateTime.getMinute();
+        System.out.println(minute);
+        // 时间点，60 分钟 ， 00 分钟
+        if (minute == 0) {
+            System.out.println("时间点，60 分钟 ， 00 分钟");
+        }
+
+        // 时间点 15、30 45 分钟
+        if (minute == 15 || minute == 30 || minute == 45) {
+            System.out.println("时间点 15、30 45 分钟");
+        }
+
+        // 时间点 20 40 分钟
+        if (minute == 20 || minute == 40) {
+            System.out.println("时间点 20 40 分钟");
+        }
+
+    }
+
+    @Test
+    public void test72() {
+        minusBrandCodeListOf15Minutes.forEach(System.out::println);
+    }
+
+    @Test
+    public void test73() {
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String formattedDate = sdf.format(date);
+        System.out.println(formattedDate);
+    }
+
+    @Test
+    public void test74() {
+        String str = "022";
+        String prefix = "0";
+
+        if (str.startsWith(prefix)) {
+            str = str.substring(prefix.length());
+            if (str.startsWith(prefix)) {
+                str = str.substring(prefix.length());
+            }
+        }
+
+        System.out.println(str);
+    }
+
+    @Test
+    public void test75() {
+        String startDateStr = "2022-12-17";
+        String endDateStr = "2023-03-15";
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate startDate = LocalDate.parse(startDateStr, dateFormatter);
+        LocalDate endDate = LocalDate.parse(endDateStr, dateFormatter);
+
+        System.out.println(ChronoUnit.DAYS.between(startDate, endDate));
+
+    }
+
+    @Test
+    public void test76() {
+        // 需要判断当前时间段是否是凌晨00:00 - 04:00
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String dateTime = "2023-03-01 01:20:23";
+        LocalDateTime currentDateTime = LocalDateTime.parse(dateTime, dateTimeFormatter);
+        int hour = currentDateTime.getHour();
+        System.out.println(hour);
+
+    }
+
+    @Test
+    public void test77() {
+      List<String> str = new ArrayList<>();
+        str.add("0.553");
+        str.add("0.540");
+        str.add("0.573");
+        str.add("0.569");
+        str.add("0.569");
+        str.add("0.548");
+        str.add("0.553");
+        str.add("0.540");
+        str.add("0.532");
+        str.add("0.555");
+        str.add("0.570");
+        str.add("0.579");
+        str.add("0.530");
+        str.add("0.541");
+        str.add("0.568");
+        str.add("0.560");
+        str.add("0.528");
+        str.add("0.552");
+        str.add("0.540");
+        str.add("0.543");
+
+        BigDecimal sum = new BigDecimal(0);
+        for (String s : str) {
+            sum = sum.add(new BigDecimal(s));
+        }
+
+        System.out.println(sum.divide(new BigDecimal(20), 3, RoundingMode.HALF_EVEN));
+
+    }
+
+    @Test
+    public void test78() {
+        testService.test();
+    }
+
+    @Test
+    public void test79() {
+        BigDecimal n = new BigDecimal("0.355");
+        System.out.println(n.setScale(2, RoundingMode.HALF_EVEN));
+    }
+
+    @Test
+    public void test80() {
+        // 查询机组名称
+        String patternStr = "(.{2})\\s*$";
+        Pattern pattern = Pattern.compile(patternStr);
+        Matcher matcher = pattern.matcher("２３４".replace(" ", ""));
+        String emCode = "";
+        if (matcher.find()) {
+            emCode = matcher.group();
+        }
+
+        System.out.println(emCode);
+
+    }
+
+    @Test
+    public void test81() {
+        String input = "a２３４１３４";
+        //String input = "a";
+        System.out.println(formatString(input));
+    }
+
+
+    @Test
+    public void test82() {
+        // 有效值集合
+        List<Double> newIndexDataList = new ArrayList<>();
+        //String str = "0.391,0.378,0.379,0.369,0.366,0.371,0.377,0.37,0.374,0.374,0.372,0.377,0.371,0.377,0.37,0.37,0.371,0.369,0.368,0.377,0.373,0.376,0.37,0.371,0.366,0.366,0.381,0.369,0.373,0.374";
+         String str = "3.457,3.184,3.219,3.044,3.013,3.045,3.134,3.102,3.125,3.086,3.144,3.239,3.057,3.226,3.075,3.107,3.048,3.05,3.027,3.217,3.169,3.149,2.977,3.117,3.019,3,3.225,3.078,3.224,3.221";
+        // 平均值
+        String[] split = str.split(",");
+        for (String s : split) {
+            newIndexDataList.add(Double.valueOf(s));
+        }
+
+        double avg = newIndexDataList.stream().mapToDouble(Double::floatValue).average().orElse(0);
+
+//        avg = Double.parseDouble(BigDecimal.valueOf(avg).setScale(3, RoundingMode.HALF_EVEN).toString());
+        // 有效样本数
+        double totalSumSampleCount = newIndexDataList.size();
+        // 标准偏差
+        double dataSd = 0;
+        double newPfc = 0;
+        for (double dataValue : newIndexDataList) {
+            double cha = dataValue - avg;
+            double pf = cha * cha;
+            newPfc = newPfc + pf;
+        }
+        newPfc = newPfc / (totalSumSampleCount - 1);
+        dataSd = Math.sqrt(newPfc);
+        System.out.println(new BigDecimal(String.valueOf(dataSd)).setScale(4, RoundingMode.HALF_EVEN));
+    }
+
+    @Test
+    public void test83() {
+        List<String> s = new ArrayList<>();
+        s.add("一");
+        s.add("三");
+        s.add("二");
+        s.add("四");
+        s.add("五");
+        s.sort(Comparator.reverseOrder());
+        System.out.println(s);
+    }
+
+    @Test
+    public void test84() {
+        String str = "2023-05-31 12:00:00";
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime lastTime = LocalDateTime.parse(str, dateTimeFormatter);
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM");
+        LocalDate currentDate = LocalDate.now();
+        LocalDate newCurrentDate = currentDate.with(TemporalAdjusters.firstDayOfMonth());
+        LocalDate startDate = lastTime.toLocalDate();
+        LocalDate newStartDate = startDate.with(TemporalAdjusters.firstDayOfMonth());
+
+        while (!newCurrentDate.isBefore(newStartDate)) {
+            System.out.println(newStartDate);
+            newStartDate = newStartDate.plusMonths(1);
+        }
+    }
+
+
+    /**
+     * 将机组编码字符串进行格式化
+     *  例：a２３４１３４ 转为 a234134
+     * @param input 机组编码
+     * @return java.lang.String
+     */
+    private String formatString(String input) {
+        StringBuilder sb = new StringBuilder();
+        if (StrUtil.isNotBlank(input)) {
+            for (int i = 0; i < input.length(); i++) {
+                int num = -1;
+                try {
+                    num = Integer.parseInt(String.valueOf(input.charAt(i)));
+                } catch (Exception ignored) {
+
+                } finally {
+                    if (num != -1) {
+                        sb.append(num);
+                    } else {
+                        sb.append(input.charAt(i));
+                    }
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    @Test
+    public void test85() {
+        BigDecimal parameterValue = new BigDecimal("3.06");
+        System.out.println(eligibility(parameterValue, true, "3", "3", "", false, 1));
+    }
+
+    @Test
+    public void test86() {
+        String date = "2021-07-23";
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate currentDate = LocalDate.parse(date, dateFormatter);
+        System.out.println(currentDate.plusDays(23));
+    }
+
+    @Test
+    public void test87() {
+        // 处理机组软硬情况
+        Map<String, Boolean> modelInfo = new HashMap<>();
+        modelInfo.put("1", true);
+        // 正常
+        if (Objects.equals(true, modelInfo.get("2") )) {
+            System.out.println("2存在");
+        } else {
+            System.out.println("2不存在");
+        }
+
+        // 异常方式1
+        boolean isTure = modelInfo.get("2");
+        if (Objects.equals(true, isTure)) {
+            System.out.println("2存在");
+        } else {
+            System.out.println("2不存在");
+        }
+
+        // 异常方式2
+        if (modelInfo.get("2")) {
+            System.out.println("2存在");
+        } else {
+            System.out.println("2不存在");
+        }
+    }
+
+    /**
+     * 是否合格
+     * @param parameterValue 参数值
+     * @param whetherUpLimit 是否操作上限
+     * @param upLimit 上限值
+     * @param setValue 中心值
+     * @param lowLimit 下限值
+     * @param whetherLowLimit 是否存在下限
+     * @param bit 修约位数
+     * @return java.lang.Boolean
+     */
+    public static Boolean eligibility(BigDecimal parameterValue, Boolean whetherUpLimit, String upLimit, String setValue, String lowLimit, Boolean whetherLowLimit, int bit) {
+
+        //根据上下限的值和判定进行判断是否正常,true表示正常，false表示异常
+        boolean flag = Boolean.FALSE;
+        if (StrUtil.isNotBlank(upLimit)) {
+            if (whetherUpLimit) {
+                return fourUpSixInto(parameterValue, bit).compareTo(fourUpSixInto(new BigDecimal(upLimit), bit)) > 0;
+            }
+            if (fourUpSixInto(parameterValue, bit).compareTo(fourUpSixInto(new BigDecimal(upLimit), bit)) >= 0) {
+                return true;
+            }
+        }
+
+        if (StrUtil.isNotBlank(lowLimit)) {
+            if (whetherLowLimit) {
+                return fourUpSixInto(parameterValue, bit).compareTo(fourUpSixInto(new BigDecimal(lowLimit), bit)) <= 0;
+            }
+            if (fourUpSixInto(parameterValue, bit).compareTo(fourUpSixInto(new BigDecimal(lowLimit), bit)) < 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * <p> 四舍六入五五成双 </p>
+     *
+     * @param num         保留数字
+     * @param countNumber 保留位数
+     * @return java.lang.String
+     * @author mxuexxmy
+     * @date 2022/3/14 16:03
+     */
+    private static BigDecimal fourUpSixInto(BigDecimal num, int countNumber) {
+        return num.setScale(countNumber, RoundingMode.HALF_EVEN);
+    }
 
 
 //    /**

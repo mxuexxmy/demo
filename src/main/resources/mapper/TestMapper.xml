@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="edu.gues.demo.mapper.TestMapper">
+
+
+    <select id="test" resultType="edu.gues.demo.entity.DemoTwo">
+        SELECT * FROM scada_data.pr_071131029_1231H13027 LIMIT 100;
+    </select>
+</mapper>

@@ -13,6 +13,6 @@ public class UserDTO {
 
     private String name;
 
-    private String age;
+    private Integer age;
 
 }
