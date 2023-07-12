@@ -991,19 +991,42 @@ class DemoApplicationTests {
     public void test74Recursion() {
         String str = "000022";
         System.out.println(recursionQuery(str));
+        System.out.println(buildSerialNumber(22, 6));
     }
 
+    /**
+     * 获取数字
+     *
+     * @param str 系列号
+     * @return java.lang.String
+     */
     private String recursionQuery(String str) {
         String prefix = "0";
-        String str1 = str;
-        if (str.startsWith(prefix)) {
-            str1 = str.substring(prefix.length());
-            System.out.println(str1);
-            recursionQuery(str1);
-        } else {
-            return str1;
+        if (!str.startsWith(prefix)) {
+            return str;
         }
-        return str1;
+        return recursionQuery(str.substring(prefix.length()));
+    }
+
+    /**
+     * 构造序列号
+     *
+     * @param nun 数字
+     * @param digit 构造长度
+     * @return java.lang.String
+     */
+    private String buildSerialNumber(Integer nun, int digit) {
+        String numStr = String.valueOf(nun);
+        if (digit == numStr.length()) {
+            return numStr;
+        }
+        StringBuilder newNumStr = new StringBuilder();
+        String prefix = "0";
+        for (int i = 0; i < digit - numStr.length(); i++) {
+             newNumStr.append(prefix);
+        }
+        newNumStr.append(numStr);
+        return newNumStr.toString();
     }
 
     @Test
