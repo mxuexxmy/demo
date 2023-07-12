@@ -7,15 +7,7 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import cn.smallbun.screw.core.Configuration;
-import cn.smallbun.screw.core.engine.EngineConfig;
-import cn.smallbun.screw.core.engine.EngineFileType;
-import cn.smallbun.screw.core.engine.EngineTemplateType;
-import cn.smallbun.screw.core.execute.DocumentationExecute;
-import cn.smallbun.screw.core.process.ProcessConfig;
 import com.google.common.collect.Sets;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import edu.gues.demo.entity.*;
 import edu.gues.demo.enums.CarType;
 import edu.gues.demo.enums.CutStatusEnum;
@@ -31,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DateFormat;
@@ -983,7 +974,7 @@ class DemoApplicationTests {
 
     @Test
     public void test74() {
-        String str = "022";
+        String str = "000022";
         String prefix = "0";
 
         if (str.startsWith(prefix)) {
@@ -994,6 +985,25 @@ class DemoApplicationTests {
         }
 
         System.out.println(str);
+    }
+
+    @Test
+    public void test74Recursion() {
+        String str = "000022";
+        System.out.println(recursionQuery(str));
+    }
+
+    private String recursionQuery(String str) {
+        String prefix = "0";
+        String str1 = str;
+        if (str.startsWith(prefix)) {
+            str1 = str.substring(prefix.length());
+            System.out.println(str1);
+            recursionQuery(str1);
+        } else {
+            return str1;
+        }
+        return str1;
     }
 
     @Test
