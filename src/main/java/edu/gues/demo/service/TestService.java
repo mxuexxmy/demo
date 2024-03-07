@@ -2,6 +2,8 @@ package edu.gues.demo.service;
 
 import edu.gues.demo.entity.Demo;
 import edu.gues.demo.entity.DemoTwo;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 /**
  * @description: TODO
@@ -12,4 +14,6 @@ import edu.gues.demo.entity.DemoTwo;
 public interface TestService {
 
     DemoTwo test();
+
+    void importFile();
 }

@@ -1,6 +1,7 @@
 package edu.gues.demo;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -19,17 +20,26 @@ import edu.gues.demo.util.AsciiUtil;
 import edu.gues.demo.util.DateRange;
 import edu.gues.demo.util.PhysicalIndexCalculateUtil;
 import lombok.SneakyThrows;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
@@ -45,13 +55,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.joining;
-
 @SpringBootTest
 class DemoApplicationTests {
 
     private static List<Object> list;
     private static Function keyExtractors;
+
+    @Resource(name = "threadPoolTaskExecutor")
+    private ThreadPoolTaskExecutor executors;
 
     @Autowired
     private TestService testService;
@@ -1011,7 +1022,7 @@ class DemoApplicationTests {
     /**
      * 构造序列号
      *
-     * @param nun 数字
+     * @param nun   数字
      * @param digit 构造长度
      * @return java.lang.String
      */
@@ -1023,7 +1034,7 @@ class DemoApplicationTests {
         StringBuilder newNumStr = new StringBuilder();
         String prefix = "0";
         for (int i = 0; i < digit - numStr.length(); i++) {
-             newNumStr.append(prefix);
+            newNumStr.append(prefix);
         }
         newNumStr.append(numStr);
         return newNumStr.toString();
@@ -1054,7 +1065,7 @@ class DemoApplicationTests {
 
     @Test
     public void test77() {
-      List<String> str = new ArrayList<>();
+        List<String> str = new ArrayList<>();
         str.add("0.553");
         str.add("0.540");
         str.add("0.573");
@@ -1124,7 +1135,7 @@ class DemoApplicationTests {
         // 有效值集合
         List<Double> newIndexDataList = new ArrayList<>();
         //String str = "0.391,0.378,0.379,0.369,0.366,0.371,0.377,0.37,0.374,0.374,0.372,0.377,0.371,0.377,0.37,0.37,0.371,0.369,0.368,0.377,0.373,0.376,0.37,0.371,0.366,0.366,0.381,0.369,0.373,0.374";
-         String str = "3.457,3.184,3.219,3.044,3.013,3.045,3.134,3.102,3.125,3.086,3.144,3.239,3.057,3.226,3.075,3.107,3.048,3.05,3.027,3.217,3.169,3.149,2.977,3.117,3.019,3,3.225,3.078,3.224,3.221";
+        String str = "3.457,3.184,3.219,3.044,3.013,3.045,3.134,3.102,3.125,3.086,3.144,3.239,3.057,3.226,3.075,3.107,3.048,3.05,3.027,3.217,3.169,3.149,2.977,3.117,3.019,3,3.225,3.078,3.224,3.221";
         // 平均值
         String[] split = str.split(",");
         for (String s : split) {
@@ -1174,6 +1185,7 @@ class DemoApplicationTests {
 
         while (!newCurrentDate.isBefore(newStartDate)) {
             System.out.println(newStartDate);
+
             newStartDate = newStartDate.plusMonths(1);
         }
     }
@@ -1181,7 +1193,8 @@ class DemoApplicationTests {
 
     /**
      * 将机组编码字符串进行格式化
-     *  例：a２３４１３４ 转为 a234134
+     * 例：a２３４１３４ 转为 a234134
+     *
      * @param input 机组编码
      * @return java.lang.String
      */
@@ -1208,8 +1221,8 @@ class DemoApplicationTests {
 
     @Test
     public void test85() {
-        BigDecimal parameterValue = new BigDecimal("3.06");
-        System.out.println(eligibility(parameterValue, true, "3", "3", "", false, 1));
+        BigDecimal parameterValue = new BigDecimal("11.79");
+        System.out.println(eligibility(parameterValue, true, "12.80", "12.30", "11.80", true, 2));
     }
 
     @Test
@@ -1226,7 +1239,7 @@ class DemoApplicationTests {
         Map<String, Boolean> modelInfo = new HashMap<>();
         modelInfo.put("1", true);
         // 正常
-        if (Objects.equals(true, modelInfo.get("2") )) {
+        if (Objects.equals(true, modelInfo.get("2"))) {
             System.out.println("2存在");
         } else {
             System.out.println("2不存在");
@@ -1248,41 +1261,471 @@ class DemoApplicationTests {
         }
     }
 
+    @Test
+    public void test88() {
+        List<String> strings = new ArrayList<>();
+        strings.forEach(System.out::println);
+    }
+
+    @Test
+    public void test89() {
+        List<UserDTO> userDTOS = new ArrayList<>();
+        userDTOS.forEach(System.out::println);
+
+    }
+
+    @Test
+    public void test90() {
+        String newYearMonth = "2023-08" + "-01";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate startDate = LocalDate.parse(newYearMonth, formatter);
+        LocalDate endDate = LocalDate.now();
+        // 如果是不同年或不同月份取月的最后的一天
+        if (startDate.getYear() != endDate.getYear() || startDate.getMonth() != endDate.getMonth()) {
+            endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        }
+
+        System.out.println(endDate);
+    }
+
+    @Test
+    public void test91() {
+        List<DemoTwo> demoTwos = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            DemoTwo demoTwo = new DemoTwo();
+            demoTwo.setTime(String.valueOf(i));
+            demoTwos.add(demoTwo);
+        }
+
+        for (DemoTwo demoTwo : demoTwos) {
+            demoTwo.setItemValue(demoTwo.getTime());
+        }
+
+        for (DemoTwo demoTwo : demoTwos) {
+            System.out.println(demoTwo);
+        }
+    }
+
+    @Test
+    public void test92() {
+        Date date = new Date();
+        System.out.println(DateUtil.format(date, "yyyy-MM-dd HH:mm:ss"));
+    }
+
+    @Test
+    public void test93() {
+        Map<String, String> testMap = null;
+        System.out.println(testMap.get("code"));
+    }
+
+    @Test
+    public void test94() {
+        String dataTimeStr = "1696929662422";
+        Instant instant = Instant.ofEpochMilli(Long.parseLong(dataTimeStr));
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedDateTime = localDateTime.format(formatter);
+        System.out.println(formattedDateTime);
+    }
+
+    @Test
+    public void test95() {
+        // 卷烟规律
+        // 自产牌号 最后两位车号 31 -48
+
+        // 白沙 倒数第二位是 车号 1-9 , 1-9 号生产白沙
+
+    }
+
+    @Test
+    public void test97() throws NoSuchFieldException, IllegalAccessException {
+        final String s1 = "Hello World";
+        String s2 = s1.substring(6);
+        System.out.println(s1);
+        System.out.println(s2);
+
+        Field field = String.class.getDeclaredField("value");
+        field.setAccessible(true);
+        char[] value = (char[]) field.get(s1);
+        value[6] = 'H';
+        value[7] = 'e';
+        value[8] = 'n';
+        value[9] = 'r';
+        value[10] = 'y';
+        System.out.println(s1);
+        System.out.println(s2);
+    }
+
+    @Test
+    public void test96() {
+        // 滤棒规律
+
+        String input = "12345";
+
+        if (input.length() >= 2) {
+            String lastTwoDigits = input.substring(input.length() - 2);
+            int lastTwoDigitsValue = Integer.parseInt(lastTwoDigits);
+            System.out.println("最后两位数是：" + lastTwoDigitsValue);
+        } else {
+            System.out.println("字符串长度不足两位，无法提取最后两位数。");
+        }
+    }
+
+    @Test
+    public void test98() {
+        List<String> list = new ArrayList<>();
+        list.add("1");
+        list.add("2");
+        list.add("3");
+        List<String> collect = list.stream().filter(e -> !"2".equals(e)).collect(Collectors.toList());
+        System.out.println(collect);
+    }
+
+
+    @SneakyThrows
+    @Test
+    public void collectDemo() {
+        executors.execute(() -> {
+            while (true) {
+                System.out.println("开始了");
+                try {
+                    System.out.println("睡眠了");
+                    Thread.sleep(500);
+                    System.out.println("睡醒了");
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+    }
+
     /**
      * 是否合格
-     * @param parameterValue 参数值
-     * @param whetherUpLimit 是否操作上限
-     * @param upLimit 上限值
-     * @param setValue 中心值
-     * @param lowLimit 下限值
+     *
+     * @param parameterValue  参数值
+     * @param whetherUpLimit  是否操作上限
+     * @param upLimit         上限值
+     * @param setValue        中心值
+     * @param lowLimit        下限值
      * @param whetherLowLimit 是否存在下限
-     * @param bit 修约位数
+     * @param bit             修约位数
      * @return java.lang.Boolean
      */
-    public static Boolean eligibility(BigDecimal parameterValue, Boolean whetherUpLimit, String upLimit, String setValue, String lowLimit, Boolean whetherLowLimit, int bit) {
+    public static Boolean eligibility(BigDecimal parameterValue,
+                                      Boolean whetherUpLimit,
+                                      String upLimit,
+                                      String setValue,
+                                      String lowLimit,
+                                      Boolean whetherLowLimit,
+                                      int bit) {
 
         //根据上下限的值和判定进行判断是否正常,true表示正常，false表示异常
-        boolean flag = Boolean.FALSE;
         if (StrUtil.isNotBlank(upLimit)) {
             if (whetherUpLimit) {
-                return fourUpSixInto(parameterValue, bit).compareTo(fourUpSixInto(new BigDecimal(upLimit), bit)) > 0;
-            }
-            if (fourUpSixInto(parameterValue, bit).compareTo(fourUpSixInto(new BigDecimal(upLimit), bit)) >= 0) {
-                return true;
+                if (fourUpSixInto(parameterValue, bit).compareTo(fourUpSixInto(new BigDecimal(upLimit), bit)) > 0) {
+                    return true;
+                }
+            } else {
+                if (fourUpSixInto(parameterValue, bit).compareTo(fourUpSixInto(new BigDecimal(upLimit), bit)) >= 0) {
+                    return true;
+                }
             }
         }
 
         if (StrUtil.isNotBlank(lowLimit)) {
             if (whetherLowLimit) {
-                return fourUpSixInto(parameterValue, bit).compareTo(fourUpSixInto(new BigDecimal(lowLimit), bit)) <= 0;
-            }
-            if (fourUpSixInto(parameterValue, bit).compareTo(fourUpSixInto(new BigDecimal(lowLimit), bit)) < 0) {
-                return true;
+                if (fourUpSixInto(parameterValue, bit).compareTo(fourUpSixInto(new BigDecimal(lowLimit), bit)) < 0) {
+                    return true;
+                }
+            } else {
+                if (fourUpSixInto(parameterValue, bit).compareTo(fourUpSixInto(new BigDecimal(lowLimit), bit)) <= 0) {
+                    return true;
+                }
             }
         }
 
         return false;
     }
+
+    @Test
+    public void test99() {
+        String t1 = "0.840";
+        String t2 = "0.845";
+
+        System.out.println(fourUpSixInto(new BigDecimal(t2), 2));
+    }
+
+    @Test
+    public void test100() {
+        String text = "研究院";
+        String s1 = StrUtil.subBefore(text, "院", false).replaceAll(" ","");
+        String unit = s1 + "院";
+        System.out.println(unit.trim());
+        if ("院".equals(unit.trim())){
+            System.out.println(unit);
+        }
+        System.out.println(s1);
+        System.out.println(unit);
+    }
+
+    @Test
+    public void test101() {
+        try {
+            File pdf = new File("C://Users//19897//Documents//QHJC20230913F002砝码折痕挺度专用.pdf");
+            MultipartFile file = new MockMultipartFile(pdf.getName(), pdf.getName(),
+                    null, new FileInputStream(pdf));;
+            // 计量设备上传文件更新设备有限期时间
+            PDDocument pdDocument = PDDocument.load(file.getInputStream());
+            PDFTextStripper pdfTextStripper = new PDFTextStripper();
+            pdfTextStripper.setSortByPosition(true);
+            String text = pdfTextStripper.getText(pdDocument);
+            // 去掉空格的文本
+            String removeSpacesText = text.replaceAll(" ", "");
+            String unit = "";
+
+            // 如果是有限公司
+             if (removeSpacesText.contains("有限公司")) {
+                String s1 = StrUtil.subBefore(removeSpacesText, "有限公司", false).replaceAll(" ","");
+                unit = s1 + "有限公司";
+            }
+            // 如果是研究中心
+            else if (removeSpacesText.contains("研究中心")) {
+                String s1 = StrUtil.subBefore(removeSpacesText, "研究中心", false).replaceAll(" ","");
+                unit = s1 + "研究中心";
+            }
+             // 如果是研究院
+             else if (removeSpacesText.contains("研究院")) {
+                 String s1 = StrUtil.subBefore(removeSpacesText, "研究院", false).replaceAll(" ","");
+                 unit = s1 + "研究院";
+             }
+
+//            System.out.println(unit);
+            String year = null;
+            String[] stringsOne = null;
+            if (text.contains("检定日期")){
+                stringsOne = text.split("检定日期");
+            }else if (text.contains("校准日期")){
+                stringsOne = text.split("校准日期");
+            }else if (text.contains("测试日期")){
+                stringsOne = text.split("测试日期");
+            } else if (text.contains("校 准 日 期 年 月 日")) {
+                stringsOne = text.split("校 准 日 期 年 月 日");
+                String newText = StrUtil.subBefore(stringsOne[1], "Date of Calibration year month day", false).replaceAll(" ","");
+                System.out.println(newText.replaceAll(" ", "").replaceAll("\n", "").replaceAll("\r", ""));
+            } else if (text.contains("校准日期年月日")) {
+                stringsOne = text.split("校准日期年月日");
+            } else if (text.contains("校 准 日 期")){
+                stringsOne = text.split("校 准 日 期");
+            }
+            if (Objects.nonNull(stringsOne) && stringsOne.length != 1){
+                String  s = stringsOne[1];
+                String sub = s.substring(0, s.indexOf("日")).trim();
+                String replace = sub.replace(" ", "");
+                String replaceOne = replace.replace("年", "-");
+                year = replaceOne.replace("月", "-");
+            }
+//            if (StrUtil.isNotBlank(year)){
+//                DateTime parse = DateUtil.parse(year, "yyyy-MM-dd");
+//            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void test102() {
+        DateTime parse = DateUtil.parse("20230707", "yyyyMMdd");
+        System.out.println(parse);
+        DateTime parse1 = DateUtil.parse("2023-07-07", "yyyy-MM-dd");
+        System.out.println(parse1);
+    }
+
+    @Test
+    public void test103() {
+        String inputDateTimeString = "2023-11-14T16:00:00.000+00:00";
+
+        // 将字符串解析为日期时间对象
+        // 解析原始日期时间字符串为 ZonedDateTime 对象
+        ZonedDateTime planStartTimeStr = ZonedDateTime.parse(inputDateTimeString);
+
+        // 将日期时间对象转换为本地日期时间
+        // 定义目标时区 (东八区)
+        ZoneId targetZone = ZoneId.of("Asia/Shanghai");
+
+        // 将原始 ZonedDateTime 转换为目标时区的 LocalDateTime
+        LocalDateTime planStartTime = planStartTimeStr
+                .withZoneSameInstant(targetZone)
+                .toLocalDateTime();
+
+
+        // 定义日期时间格式
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        // 将日期时间格式化为字符串
+        String outputDateString = planStartTime.format(formatter);
+
+        // 输出结果
+        System.out.println(outputDateString);
+    }
+
+    @Test
+    public void test104() {
+        System.out.println(new BigDecimal("1150")
+                .scaleByPowerOfTen(-3).add(new BigDecimal("0.05")).toPlainString());
+        System.out.println(new BigDecimal("850")
+                .scaleByPowerOfTen(-3).subtract(new BigDecimal("0.05")).toPlainString());
+    }
+
+    @Test
+    public void test105() {
+        // 获取当前日期
+        LocalDateTime currentDateTime = LocalDateTime.now();
+
+        // 获取当前日期的年月日部分
+        LocalDateTime datePart = currentDateTime.toLocalDate().atStartOfDay();
+
+        // 构建00:00时刻
+        LocalDateTime midnight = datePart.with(LocalTime.MIDNIGHT);
+
+        System.out.println("当前时间: " + currentDateTime);
+        System.out.println("sdddd: " + datePart);
+        System.out.println("当前日期的00:00时刻: " + midnight);
+
+    }
+
+    @Test
+    public void test106() {
+
+        LocalDateTime now = LocalDateTime.now();
+        System.out.println(now);
+        // 每一个班最后一个生成
+        //由于排班有不是整点的情况，允许有 ± 1 分钟的误差
+        LocalDateTime startTime = now.plusMinutes(-1);
+        System.out.println(startTime);
+        LocalDateTime endTime = now.plusMinutes(1);
+        System.out.println(endTime);
+        System.out.println(now.compareTo(startTime) >= 0);
+        System.out.println( now.compareTo(endTime) <= 0);
+        boolean res = now.compareTo(startTime) >= 0 || now.compareTo(endTime) <= 0;
+        System.out.println(res);
+    }
+
+
+    @Test
+    public void test107() {
+
+        String str = "cs";
+
+        System.out.println(str.length());
+    }
+
+    @Test
+    public void copyFileLb() throws IOException {
+
+        Path sourceFile = Paths.get("E:\\hlxd\\bd\\测试台文件\\分日期\\2022年");
+        Path targetFile = Paths.get("E:\\hlxd\\bd\\测试台文件\\分牌号");
+
+        // 定义拷贝选项，使用 StandardCopyOption.COPY_ATTRIBUTES 保留原始文件的属性
+        CopyOption[] options = new CopyOption[] {
+                StandardCopyOption.COPY_ATTRIBUTES
+        };
+
+        // 执行文件拷贝
+        Files.copy(sourceFile, targetFile, options);
+
+        System.out.println("文件拷贝完成！");
+
+    }
+
+    @Test
+    public void test108() {
+        Boolean s = true;
+        String s1 = s.toString();
+        System.out.println("-----字符串的Boolean----");
+        System.out.println(s1);
+        System.out.println("-----恢复的Boolean----");
+        System.out.println(Boolean.parseBoolean(s1));
+
+    }
+
+    @Test
+    public void test109() {
+        List<String> list = new ArrayList<>();
+        list.add("apple");
+        list.add("orange");
+        list.add("banana");
+
+        // 使用Collections.sort()进行排序
+
+        // 输出排序后的列表
+        System.out.println("List:");
+        for (String item : list) {
+            System.out.println(item);
+        }
+    }
+
+    @Test
+    public void test110() {
+        List<String> list = new ArrayList<>();
+        list.add("orange");
+        list.add("apple");
+        list.add("banana");
+
+
+        // 使用自定义的Comparator进行排序
+        list.sort((s1, s2) -> {
+            if (s1.equals("apple") && s2.equals("orange")) {
+                return 1; // 将"orange"放在"apple"之后
+            } else if (s1.equals("orange") && s2.equals("apple")) {
+                return -1; // 将"apple"放在"orange"之前
+            } else {
+                return 0; // 其他情况下，不做变化
+            }
+        });
+
+        // 输出排序后的列表
+        System.out.println("Sorted List with Orange After Apple:");
+        for (String item : list) {
+            System.out.println(item);
+        }
+    }
+
+    @Test
+    public void test111() {
+        List<String> list = new ArrayList<>();
+        list.add("banana2");
+        list.add("orange");
+        list.add("apple");
+        list.add("banana");
+        list.add("banana1");
+        list.add("banana3");
+
+        String apple = null;
+        String orange;
+        int appleLocation = 0;
+        int orangeLocation = 0;
+        int i = 0;
+        for (String entity : list) {
+
+            if (entity.equals("apple")) {
+                apple = new String(entity);
+                appleLocation = i;
+            }
+            if (entity.equals("orange")) {
+                orange = new String(entity);
+                orangeLocation = i;
+            }
+            i++;
+        }
+
+        // 交换位置
+
+        for (String item : list) {
+            System.out.println(item);
+        }
+    }
+
 
     /**
      * <p> 四舍六入五五成双 </p>
