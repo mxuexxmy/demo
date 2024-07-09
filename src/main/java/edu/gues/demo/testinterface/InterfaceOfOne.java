@@ -8,7 +8,7 @@ package edu.gues.demo.testinterface;
  */
 public interface InterfaceOfOne {
 
-    String name = "龙兴";
+    String name = "lx";
 
     default String getNameOfField() {
         return name;

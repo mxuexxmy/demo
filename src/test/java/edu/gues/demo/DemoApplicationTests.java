@@ -1468,71 +1468,7 @@ class DemoApplicationTests {
         System.out.println(unit);
     }
 
-    @Test
-    public void test101() {
-        try {
-            File pdf = new File("C://Users//19897//Documents//QHJC20230913F002砝码折痕挺度专用.pdf");
-            MultipartFile file = new MockMultipartFile(pdf.getName(), pdf.getName(),
-                    null, new FileInputStream(pdf));;
-            // 计量设备上传文件更新设备有限期时间
-            PDDocument pdDocument = PDDocument.load(file.getInputStream());
-            PDFTextStripper pdfTextStripper = new PDFTextStripper();
-            pdfTextStripper.setSortByPosition(true);
-            String text = pdfTextStripper.getText(pdDocument);
-            // 去掉空格的文本
-            String removeSpacesText = text.replaceAll(" ", "");
-            String unit = "";
-
-            // 如果是有限公司
-             if (removeSpacesText.contains("有限公司")) {
-                String s1 = StrUtil.subBefore(removeSpacesText, "有限公司", false).replaceAll(" ","");
-                unit = s1 + "有限公司";
-            }
-            // 如果是研究中心
-            else if (removeSpacesText.contains("研究中心")) {
-                String s1 = StrUtil.subBefore(removeSpacesText, "研究中心", false).replaceAll(" ","");
-                unit = s1 + "研究中心";
-            }
-             // 如果是研究院
-             else if (removeSpacesText.contains("研究院")) {
-                 String s1 = StrUtil.subBefore(removeSpacesText, "研究院", false).replaceAll(" ","");
-                 unit = s1 + "研究院";
-             }
-
-//            System.out.println(unit);
-            String year = null;
-            String[] stringsOne = null;
-            if (text.contains("检定日期")){
-                stringsOne = text.split("检定日期");
-            }else if (text.contains("校准日期")){
-                stringsOne = text.split("校准日期");
-            }else if (text.contains("测试日期")){
-                stringsOne = text.split("测试日期");
-            } else if (text.contains("校 准 日 期 年 月 日")) {
-                stringsOne = text.split("校 准 日 期 年 月 日");
-                String newText = StrUtil.subBefore(stringsOne[1], "Date of Calibration year month day", false).replaceAll(" ","");
-                System.out.println(newText.replaceAll(" ", "").replaceAll("\n", "").replaceAll("\r", ""));
-            } else if (text.contains("校准日期年月日")) {
-                stringsOne = text.split("校准日期年月日");
-            } else if (text.contains("校 准 日 期")){
-                stringsOne = text.split("校 准 日 期");
-            }
-            if (Objects.nonNull(stringsOne) && stringsOne.length != 1){
-                String  s = stringsOne[1];
-                String sub = s.substring(0, s.indexOf("日")).trim();
-                String replace = sub.replace(" ", "");
-                String replaceOne = replace.replace("年", "-");
-                year = replaceOne.replace("月", "-");
-            }
-//            if (StrUtil.isNotBlank(year)){
-//                DateTime parse = DateUtil.parse(year, "yyyy-MM-dd");
-//            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
+    
     @Test
     public void test102() {
         DateTime parse = DateUtil.parse("20230707", "yyyyMMdd");
