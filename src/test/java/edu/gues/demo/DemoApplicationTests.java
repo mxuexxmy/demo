@@ -20,18 +20,13 @@ import edu.gues.demo.util.AsciiUtil;
 import edu.gues.demo.util.DateRange;
 import edu.gues.demo.util.PhysicalIndexCalculateUtil;
 import lombok.SneakyThrows;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -41,6 +36,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
@@ -49,6 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -1468,7 +1466,7 @@ class DemoApplicationTests {
         System.out.println(unit);
     }
 
-    
+
     @Test
     public void test102() {
         DateTime parse = DateUtil.parse("20230707", "yyyyMMdd");
@@ -1660,6 +1658,353 @@ class DemoApplicationTests {
         for (String item : list) {
             System.out.println(item);
         }
+    }
+
+    @Test
+    public void test112() throws Exception {
+        String data = readFileAsString("E:\\other\\data-file.txt");
+        com.alibaba.fastjson.JSONObject dataBox = com.alibaba.fastjson.JSONObject.parseObject(data);
+
+        Map<String, Map<String, List<Map<String, String>>>> historyData = (Map<String, Map<String, List<Map<String, String>>>>)  dataBox.get("data");
+        if (CollectionUtil.isNotEmpty(historyData)) {
+            List<TestBenchDataCompensationBO> testBenchDataCompensationList = new ArrayList<>();
+
+            historyData.forEach((key, value) -> {
+
+                // 1. test time data collection
+                List<TestBenchData> testTimeDataList = new ArrayList<>();
+                List<Map<String, String>> testTimeList = value.get("test_time");
+                for (int i = 0; i < testTimeList.size(); i++) {
+                    if (testTimeList.size() == 1) {
+                        TestBenchData testBenchData = new TestBenchData();
+                        testBenchData.setTime(testTimeList.get(i).get("time"));
+                        testBenchData.setItemValue(testTimeList.get(i).get("variableValue"));
+                        testTimeDataList.add(testBenchData);
+                    } else if (i < testTimeList.size() - 1){
+                        if (!Objects.equals(testTimeList.get(i).get("variableValue"), testTimeList.get(i + 1).get("variableValue"))) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(testTimeList.get(i).get("time"));
+                            testBenchData.setItemValue(testTimeList.get(i).get("variableValue"));
+                            testTimeDataList.add(testBenchData);
+                        }
+                    } else {
+                        if (!Objects.equals(testTimeList.get(i -1).get("variableValue"), testTimeList.get(i).get("variableValue"))) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(testTimeList.get(i).get("time"));
+                            testBenchData.setItemValue(testTimeList.get(i).get("variableValue"));
+                            testTimeDataList.add(testBenchData);
+                        }
+                    }
+                }
+
+                // 2. all vent value data collection
+                List<TestBenchData> allVentDataList = new ArrayList<>();
+                List<Map<String, String>> allventValueList = value.get("allvent_value");
+                for (int i = 0; i < allventValueList.size(); i++) {
+                    if (allventValueList.size() == 1) {
+                        TestBenchData testBenchData = new TestBenchData();
+                        testBenchData.setTime(allventValueList.get(i).get("time"));
+                        testBenchData.setItemValue(allventValueList.get(i).get("variableValue"));
+                        allVentDataList.add(testBenchData);
+                    } else if (i < allventValueList.size() - 1){
+                        if (allventValueList.get(i).get("variableValue").length() > allventValueList.get(i + 1).get("variableValue").length()) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(allventValueList.get(i).get("time"));
+                            testBenchData.setItemValue(allventValueList.get(i).get("variableValue"));
+                            allVentDataList.add(testBenchData);
+                        }
+                    } else {
+                        if (allventValueList.get(i -1).get("variableValue").length() > allventValueList.get(i).get("variableValue").length()) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(allventValueList.get(i).get("time"));
+                            testBenchData.setItemValue(allventValueList.get(i).get("variableValue"));
+                            allVentDataList.add(testBenchData);
+                        }
+                    }
+                }
+
+                // 3. circle value data collection
+                List<TestBenchData> circleValueDataList = new ArrayList<>();
+                List<Map<String, String>> circleValueList = value.get("circle_value");
+                for (int i = 0; i < circleValueList.size(); i++) {
+                    if (circleValueList.size() == 1) {
+                        TestBenchData testBenchData = new TestBenchData();
+                        testBenchData.setTime(circleValueList.get(i).get("time"));
+                        testBenchData.setItemValue(circleValueList.get(i).get("variableValue"));
+                        circleValueDataList.add(testBenchData);
+                    } else if (i < circleValueList.size() - 1){
+                        if (circleValueList.get(i).get("variableValue").length() > circleValueList.get(i + 1).get("variableValue").length()) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(circleValueList.get(i).get("time"));
+                            testBenchData.setItemValue(circleValueList.get(i).get("variableValue"));
+                            circleValueDataList.add(testBenchData);
+                        }
+                    } else {
+                        if (allventValueList.get(i -1).get("variableValue").length() > circleValueList.get(i).get("variableValue").length()) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(circleValueList.get(i).get("time"));
+                            testBenchData.setItemValue(circleValueList.get(i).get("variableValue"));
+                            circleValueDataList.add(testBenchData);
+                        }
+                    }
+                }
+
+                // 4. length value data collection
+                List<TestBenchData> lengthValueDataList = new ArrayList<>();
+                List<Map<String, String>> lengthValueList = value.get("length_value");
+                for (int i = 0; i < lengthValueList.size(); i++) {
+                    if (lengthValueList.size() == 1) {
+                        TestBenchData testBenchData = new TestBenchData();
+                        testBenchData.setTime(lengthValueList.get(i).get("time"));
+                        testBenchData.setItemValue(lengthValueList.get(i).get("variableValue"));
+                        lengthValueDataList.add(testBenchData);
+                    } else if (i < lengthValueList.size() - 1){
+                        if (lengthValueList.get(i).get("variableValue").length() > lengthValueList.get(i + 1).get("variableValue").length()) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(lengthValueList.get(i).get("time"));
+                            testBenchData.setItemValue(lengthValueList.get(i).get("variableValue"));
+                            lengthValueDataList.add(testBenchData);
+                        }
+                    } else {
+                        if (lengthValueList.get(i -1).get("variableValue").length() > lengthValueList.get(i).get("variableValue").length()) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(lengthValueList.get(i).get("time"));
+                            testBenchData.setItemValue(lengthValueList.get(i).get("variableValue"));
+                            lengthValueDataList.add(testBenchData);
+                        }
+                    }
+                }
+
+                // 5. pd value data collection
+                List<TestBenchData> pdValueDataList = new ArrayList<>();
+                List<Map<String, String>> pdValueList = value.get("pd_value");
+                for (int i = 0; i < pdValueList.size(); i++) {
+                    if (pdValueList.size() == 1) {
+                        TestBenchData testBenchData = new TestBenchData();
+                        testBenchData.setTime(pdValueList.get(i).get("time"));
+                        testBenchData.setItemValue(pdValueList.get(i).get("variableValue"));
+                        pdValueDataList.add(testBenchData);
+                    } else if (i < pdValueList.size() - 1){
+                        if (pdValueList.get(i).get("variableValue").length() > pdValueList.get(i + 1).get("variableValue").length()) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(pdValueList.get(i).get("time"));
+                            testBenchData.setItemValue(pdValueList.get(i).get("variableValue"));
+                            pdValueDataList.add(testBenchData);
+                        }
+                    } else {
+                        if (pdValueList.get(i -1).get("variableValue").length() > pdValueList.get(i).get("variableValue").length()) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(pdValueList.get(i).get("time"));
+                            testBenchData.setItemValue(pdValueList.get(i).get("variableValue"));
+                            pdValueDataList.add(testBenchData);
+                        }
+                    }
+                }
+
+                // 6. weight value data collection
+                List<TestBenchData> weightValueDataList = new ArrayList<>();
+                List<Map<String, String>> weightValueList = value.get("weight_value");
+                for (int i = 0; i < weightValueList.size(); i++) {
+                    if (weightValueList.size() == 1) {
+                        TestBenchData testBenchData = new TestBenchData();
+                        testBenchData.setTime(weightValueList.get(i).get("time"));
+                        testBenchData.setItemValue(weightValueList.get(i).get("variableValue"));
+                        weightValueDataList.add(testBenchData);
+                    } else if (i < weightValueList.size() - 1){
+                        if (weightValueList.get(i).get("variableValue").length() > weightValueList.get(i + 1).get("variableValue").length()) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(weightValueList.get(i).get("time"));
+                            testBenchData.setItemValue(weightValueList.get(i).get("variableValue"));
+                            weightValueDataList.add(testBenchData);
+                        }
+                    } else {
+                        if (weightValueList.get(i -1).get("variableValue").length() > weightValueList.get(i).get("variableValue").length()) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(weightValueList.get(i).get("time"));
+                            testBenchData.setItemValue(weightValueList.get(i).get("variableValue"));
+                            weightValueDataList.add(testBenchData);
+                        }
+                    }
+                }
+
+
+                // 9. test count data collection
+                List<TestBenchData> testCountDataList = new ArrayList<>();
+                List<Map<String, String>> testCountList = value.get("test_count");
+                for (int i = 0; i < testCountList.size(); i++) {
+                    if (testCountList.size() == 1) {
+                        TestBenchData testBenchData = new TestBenchData();
+                        testBenchData.setTime(testCountList.get(i).get("time"));
+                        testBenchData.setItemValue(testCountList.get(i).get("variableValue"));
+                        testCountDataList.add(testBenchData);
+                    } else if (i < testCountList.size() - 1){
+                        if (new BigDecimal(testCountList.get(i).get("variableValue"))
+                                .compareTo(new BigDecimal(testCountList.get(i + 1).get("variableValue"))) > 0) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(testCountList.get(i).get("time"));
+                            testBenchData.setItemValue(testCountList.get(i).get("variableValue"));
+                            testCountDataList.add(testBenchData);
+                        }
+                    } else {
+                        if (new BigDecimal(testCountList.get(i -1).get("variableValue"))
+                                .compareTo(new BigDecimal(testCountList.get(i).get("variableValue"))) > 0) {
+                            TestBenchData testBenchData = new TestBenchData();
+                            testBenchData.setTime(testCountList.get(i).get("time"));
+                            testBenchData.setItemValue(testCountList.get(i).get("variableValue"));
+                            testCountDataList.add(testBenchData);
+                        }
+                    }
+                }
+
+                // 7. line name data collection
+                List<TestBenchData> lineNameDataList = new ArrayList<>();
+                List<Map<String, String>> lineNameList = value.get("line_name");
+                DateTimeFormatter dateTimeFormatter = new DateTimeFormatterBuilder()
+                        .appendPattern("yyyy-MM-dd HH:mm:ss")
+                        .optionalStart()
+                        .appendFraction(ChronoField.MILLI_OF_SECOND, 1, 3, true)
+                        .optionalEnd()
+                        .toFormatter();
+
+                testCountDataList.forEach(entity -> {
+                    TestBenchData testBenchData = new TestBenchData();
+                    long getTime1 = LocalDateTime.parse(entity.getTime(), dateTimeFormatter)
+                            .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+                    long minTime = 99999999;
+                    for (Map<String, String> stringStringMap : lineNameList) {
+                        long getTime2 = LocalDateTime.parse(stringStringMap.get("time"), dateTimeFormatter)
+                                .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                        long tempTime = Math.abs(getTime1 - getTime2);
+                        if (Math.min(tempTime, minTime) <= minTime) {
+                            minTime = tempTime;
+                            minTime = Math.min(minTime, tempTime);
+                            testBenchData.setTime(stringStringMap.get("time"));
+                            testBenchData.setItemValue(stringStringMap.get("variableValue"));
+                        }
+                    }
+                    lineNameDataList.add(testBenchData);
+                });
+
+                // 10.team name data collection
+                List<TestBenchData> teamNameDataList = new ArrayList<>();
+                List<Map<String, String>> teamNameList = value.get("team_name");
+                testCountDataList.forEach(entity -> {
+                    TestBenchData testBenchData = new TestBenchData();
+                    long getTime1 = LocalDateTime.parse(entity.getTime(), dateTimeFormatter)
+                            .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+                    long minTime = 99999999;
+                    for (Map<String, String> stringStringMap : teamNameList) {
+                        long getTime2 = LocalDateTime.parse(stringStringMap.get("time"), dateTimeFormatter)
+                                .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                        long tempTime = Math.abs(getTime1 - getTime2);
+                        if (Math.min(tempTime, minTime) <= minTime) {
+                            minTime = tempTime;
+                            minTime = Math.min(minTime, tempTime);
+                            testBenchData.setTime(stringStringMap.get("time"));
+                            testBenchData.setItemValue(stringStringMap.get("variableValue"));
+                        }
+                    }
+                    teamNameDataList.add(testBenchData);
+                });
+
+                // 8.sample name data collection
+                List<TestBenchData> sampleNameDataList = new ArrayList<>();
+                List<Map<String, String>> sampleNameList = value.get("sample_name");
+                testCountDataList.forEach(entity -> {
+                    TestBenchData testBenchData = new TestBenchData();
+                    long getTime1 = LocalDateTime.parse(entity.getTime(), dateTimeFormatter)
+                            .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+                    long minTime = 99999999;
+                    for (Map<String, String> stringStringMap : sampleNameList) {
+                        long getTime2 = LocalDateTime.parse(stringStringMap.get("time"), dateTimeFormatter)
+                                .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                        long tempTime = Math.abs(getTime1 - getTime2);
+                        if (Math.min(tempTime, minTime) <= minTime) {
+                            minTime = Math.min(minTime, tempTime);
+                            testBenchData.setTime(stringStringMap.get("time"));
+                            testBenchData.setItemValue(stringStringMap.get("variableValue"));
+                        }
+                    }
+                    sampleNameDataList.add(testBenchData);
+                });
+
+
+                // test number
+                int testNum = testTimeDataList.size();
+                for (int i = 0; i < testNum; i++) {
+                    TestBenchDataCompensationBO testBenchDataCompensationBO = new TestBenchDataCompensationBO();
+
+                    testBenchDataCompensationBO.setDeviceId(key);
+                    testBenchDataCompensationBO.setTestTime(testTimeDataList.get(i).getItemValue());
+                    testBenchDataCompensationBO.setTestCount(Integer.valueOf(testCountDataList.get(i).getItemValue()));
+                    testBenchDataCompensationBO.setLineName(lineNameDataList.get(i).getItemValue());
+                    testBenchDataCompensationBO.setTeamName(teamNameDataList.get(i).getItemValue());
+                    testBenchDataCompensationBO.setSampleName(sampleNameDataList.get(i).getItemValue());
+
+                    testBenchDataCompensationBO.setLengthValue(lengthValueDataList.get(i).getItemValue());
+                    testBenchDataCompensationBO.setCircleValue(circleValueDataList.get(i).getItemValue());
+                    testBenchDataCompensationBO.setAllventValue(allVentDataList.get(i).getItemValue());
+                    testBenchDataCompensationBO.setPdValue(pdValueDataList.get(i).getItemValue());
+                    testBenchDataCompensationBO.setWeightValue(weightValueDataList.get(i).getItemValue());
+
+                    testBenchDataCompensationList.add(testBenchDataCompensationBO);
+                }
+
+            });
+
+            if (CollectionUtil.isNotEmpty(testBenchDataCompensationList)) {
+                for (int i = 0; i < testBenchDataCompensationList.size(); i++) {
+                    System.out.println("第" + (i + 1) + "个：" + testBenchDataCompensationList.get(i));
+                    System.out.println("检验数量：" + testBenchDataCompensationList.get(i).getTestCount());
+                    if (StrUtil.isNotBlank(testBenchDataCompensationList.get(i).getLengthValue())) {
+                        String[] lens = testBenchDataCompensationList.get(i).getLengthValue().split(";");
+                        System.out.println("长度的数量：" + lens.length);
+                    }
+
+                    if (StrUtil.isNotBlank(testBenchDataCompensationList.get(i).getHardValue())) {
+                        String[] hands = testBenchDataCompensationList.get(i).getHardValue().split(";");
+                        System.out.println("硬度的数量：" + hands.length);
+                    }
+
+                    if (StrUtil.isNotBlank(testBenchDataCompensationList.get(i).getAllventValue())) {
+                        String[] allVents = testBenchDataCompensationList.get(i).getAllventValue().split(";");
+                        System.out.println("总通风率的数量：" + allVents.length);
+                    }
+
+                    if (StrUtil.isNotBlank(testBenchDataCompensationList.get(i).getCircleValue())) {
+                        String[] circles = testBenchDataCompensationList.get(i).getCircleValue().split(";");
+                        System.out.println("圆周的数量：" + circles.length);
+                    }
+
+                    if (StrUtil.isNotBlank(testBenchDataCompensationList.get(0).getPdValue())) {
+                        String[] pds = testBenchDataCompensationList.get(i).getPdValue().split(";");
+                        System.out.println("吸阻的数量：" + pds.length);
+                    }
+
+                }
+            }
+
+        }
+    }
+
+    /**
+     * read file as string
+     * reference links：https://www.geeksforgeeks.org/different-ways-reading-text-file-java/
+     *
+     * @param fileName file name
+     * @return java.lang.String
+     * @throws Exception exception
+     */
+    public static String readFileAsString(String fileName)
+            throws Exception
+    {
+        String data = "";
+        data = new String(
+                Files.readAllBytes(Paths.get(fileName)));
+        return data;
     }
 
 

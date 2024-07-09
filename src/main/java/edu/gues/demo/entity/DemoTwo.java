@@ -15,8 +15,6 @@ public class DemoTwo {
 
    private String itemValue;
 
-
    private String itemValueGettime;
-
 
 }

@@ -1,10 +1,11 @@
 package edu.gues.demo.util;
 
-import com.sun.tools.javac.util.List;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @description: TODO
@@ -15,13 +16,7 @@ import java.math.RoundingMode;
 public class BigDecimalMeanCalculator {
 
     public static void main(String[] args) {
-        List<BigDecimal> measurements = List.of(
-                new BigDecimal("98.2"),
-                new BigDecimal("99.0"),
-                new BigDecimal("100.5"),
-                new BigDecimal("98.8"),
-                new BigDecimal("101.2")
-        );
+        List<BigDecimal> measurements = new ArrayList<>();
 
         // 设置精度
         MathContext mathContext = new MathContext(10);

@@ -1,10 +1,11 @@
 package edu.gues.demo.util;
 
-import com.sun.tools.javac.util.List;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @description: TODO
@@ -15,13 +16,7 @@ import java.math.BigDecimal;
 public class CPKCalculator {
 
     public static void main(String[] args) {
-        List<BigDecimal> measurements = List.of(
-                new BigDecimal("98.2"),
-                new BigDecimal("99.0"),
-                new BigDecimal("100.5"),
-                new BigDecimal("98.8"),
-                new BigDecimal("101.2")
-        );
+        List<BigDecimal> measurements =  new ArrayList<>();
 
         // 设置规格限
         BigDecimal usl = new BigDecimal("105.0");
