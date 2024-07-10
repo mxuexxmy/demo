@@ -1740,7 +1740,7 @@ class DemoApplicationTests {
                             circleValueDataList.add(testBenchData);
                         }
                     } else {
-                        if (allventValueList.get(i -1).get("variableValue").length() > circleValueList.get(i).get("variableValue").length()) {
+                        if (circleValueList.get(i -1).get("variableValue").length() > circleValueList.get(i).get("variableValue").length()) {
                             TestBenchData testBenchData = new TestBenchData();
                             testBenchData.setTime(circleValueList.get(i).get("time"));
                             testBenchData.setItemValue(circleValueList.get(i).get("variableValue"));
@@ -1871,14 +1871,13 @@ class DemoApplicationTests {
                     long getTime1 = LocalDateTime.parse(entity.getTime(), dateTimeFormatter)
                             .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
-                    long minTime = 99999999;
+                    long minTime = 999999999;
                     for (Map<String, String> stringStringMap : lineNameList) {
                         long getTime2 = LocalDateTime.parse(stringStringMap.get("time"), dateTimeFormatter)
                                 .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
                         long tempTime = Math.abs(getTime1 - getTime2);
-                        if (Math.min(tempTime, minTime) <= minTime) {
+                        if (tempTime <= minTime) {
                             minTime = tempTime;
-                            minTime = Math.min(minTime, tempTime);
                             testBenchData.setTime(stringStringMap.get("time"));
                             testBenchData.setItemValue(stringStringMap.get("variableValue"));
                         }
@@ -1899,9 +1898,8 @@ class DemoApplicationTests {
                         long getTime2 = LocalDateTime.parse(stringStringMap.get("time"), dateTimeFormatter)
                                 .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
                         long tempTime = Math.abs(getTime1 - getTime2);
-                        if (Math.min(tempTime, minTime) <= minTime) {
+                        if (tempTime <= minTime) {
                             minTime = tempTime;
-                            minTime = Math.min(minTime, tempTime);
                             testBenchData.setTime(stringStringMap.get("time"));
                             testBenchData.setItemValue(stringStringMap.get("variableValue"));
                         }
@@ -1922,8 +1920,8 @@ class DemoApplicationTests {
                         long getTime2 = LocalDateTime.parse(stringStringMap.get("time"), dateTimeFormatter)
                                 .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
                         long tempTime = Math.abs(getTime1 - getTime2);
-                        if (Math.min(tempTime, minTime) <= minTime) {
-                            minTime = Math.min(minTime, tempTime);
+                        if (tempTime <= minTime) {
+                            minTime = tempTime;
                             testBenchData.setTime(stringStringMap.get("time"));
                             testBenchData.setItemValue(stringStringMap.get("variableValue"));
                         }
@@ -1933,7 +1931,8 @@ class DemoApplicationTests {
 
 
                 // test number
-                int testNum = testTimeDataList.size();
+                int testNum = getMinTestNumber(testTimeDataList, testCountDataList, lineNameDataList, teamNameDataList, sampleNameDataList,
+                        lengthValueDataList, circleValueDataList, allVentDataList, pdValueDataList, weightValueDataList);
                 for (int i = 0; i < testNum; i++) {
                     TestBenchDataCompensationBO testBenchDataCompensationBO = new TestBenchDataCompensationBO();
 
@@ -1957,37 +1956,77 @@ class DemoApplicationTests {
 
             if (CollectionUtil.isNotEmpty(testBenchDataCompensationList)) {
                 for (int i = 0; i < testBenchDataCompensationList.size(); i++) {
-                    System.out.println("第" + (i + 1) + "个：" + testBenchDataCompensationList.get(i));
-                    System.out.println("检验数量：" + testBenchDataCompensationList.get(i).getTestCount());
+                    System.out.println("The " + (i + 1) + "st：" + testBenchDataCompensationList.get(i));
+                    System.out.println("test number：" + testBenchDataCompensationList.get(i).getTestCount());
                     if (StrUtil.isNotBlank(testBenchDataCompensationList.get(i).getLengthValue())) {
                         String[] lens = testBenchDataCompensationList.get(i).getLengthValue().split(";");
-                        System.out.println("长度的数量：" + lens.length);
+                        System.out.println("length number：" + lens.length);
                     }
 
                     if (StrUtil.isNotBlank(testBenchDataCompensationList.get(i).getHardValue())) {
                         String[] hands = testBenchDataCompensationList.get(i).getHardValue().split(";");
-                        System.out.println("硬度的数量：" + hands.length);
+                        System.out.println("hard number：" + hands.length);
                     }
 
                     if (StrUtil.isNotBlank(testBenchDataCompensationList.get(i).getAllventValue())) {
                         String[] allVents = testBenchDataCompensationList.get(i).getAllventValue().split(";");
-                        System.out.println("总通风率的数量：" + allVents.length);
+                        System.out.println("all vent number：" + allVents.length);
                     }
 
                     if (StrUtil.isNotBlank(testBenchDataCompensationList.get(i).getCircleValue())) {
                         String[] circles = testBenchDataCompensationList.get(i).getCircleValue().split(";");
-                        System.out.println("圆周的数量：" + circles.length);
+                        System.out.println("circle number：" + circles.length);
                     }
 
                     if (StrUtil.isNotBlank(testBenchDataCompensationList.get(0).getPdValue())) {
                         String[] pds = testBenchDataCompensationList.get(i).getPdValue().split(";");
-                        System.out.println("吸阻的数量：" + pds.length);
+                        System.out.println("pd number：" + pds.length);
                     }
 
                 }
             }
 
         }
+    }
+
+    /**
+     * get min test number
+     *
+     * @param testTimeDataList test time collection
+     * @param testCountDataList test count collection
+     * @param lineNameDataList line name collection
+     * @param teamNameDataList team name collection
+     * @param sampleNameDataList sample name collection
+     * @param lengthValueDataList length collection
+     * @param circleValueDataList circle collection
+     * @param allVentDataList all vent collection
+     * @param pdValueDataList pd collection
+     * @param weightValueDataList weight collection
+     * @return int
+     */
+    private int getMinTestNumber(List<TestBenchData> testTimeDataList,
+                                 List<TestBenchData> testCountDataList,
+                                 List<TestBenchData> lineNameDataList,
+                                 List<TestBenchData> teamNameDataList,
+                                 List<TestBenchData> sampleNameDataList,
+                                 List<TestBenchData> lengthValueDataList,
+                                 List<TestBenchData> circleValueDataList,
+                                 List<TestBenchData> allVentDataList,
+                                 List<TestBenchData> pdValueDataList,
+                                 List<TestBenchData> weightValueDataList) {
+        int testNumber = testTimeDataList.size();
+
+        testNumber = Math.min(testNumber, testCountDataList.size());
+        testNumber = Math.min(testNumber, lineNameDataList.size());
+        testNumber = Math.min(testNumber, teamNameDataList.size());
+        testNumber = Math.min(testNumber, sampleNameDataList.size());
+        testNumber = Math.min(testNumber, lengthValueDataList.size());
+        testNumber = Math.min(testNumber, circleValueDataList.size());
+        testNumber = Math.min(testNumber, allVentDataList.size());
+        testNumber = Math.min(testNumber, pdValueDataList.size());
+        testNumber = Math.min(testNumber, weightValueDataList.size());
+
+        return testNumber;
     }
 
     /**
